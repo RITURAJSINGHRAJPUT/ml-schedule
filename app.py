@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 import os
 
-app = Flask(__name__)
+app = Flask(_name_)
 
 # Crop-specific moisture thresholds (in %)
 CROP_THRESHOLDS = {
@@ -73,5 +73,5 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True) 
+if _name_ == '_main_':
+    app.run(debug=True)
