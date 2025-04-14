@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Irrigation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .irrigation-needed {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .no-irrigation {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Irrigation System</h1>
+        <form id="irrigationForm">
+            <div class="form-group">
+                <label for="soilMoisture">Soil Moisture (%)</label>
+                <input type="number" id="soilMoisture" name="soilMoisture" min="0" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="humidity">Humidity (%)</label>
+                <input type="number" id="humidity" name="humidity" min="0" max="100" required>
+            </div>
+            <div class="form-group">
+                <label for="temperature">Temperature (°C)</label>
+                <input type="number" id="temperature" name="temperature" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label for="cropType">Crop Type</label>
+                <select id="cropType" name="cropType" required>
+                    <option value="wheat">Wheat</option>
+                    <option value="rice">Rice</option>
+                    <option value="corn">Corn</option>
+                    <option value="soybean">Soybean</option>
+                    <option value="cotton">Cotton</option>
+                </select>
+            </div>
+            <button type="submit">Check Irrigation Need</button>
+        </form>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('irrigationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const soilMoisture = parseFloat(document.getElementById('soilMoisture').value);
+            const humidity = parseFloat(document.getElementById('humidity').value);
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const cropType = document.getElementById('cropType').value;
+
+            // Send data to backend
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        soilMoisture,
+                        humidity,
+                        temperature,
+                        cropType
+                    })
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                
+                if (result.irrigationNeeded) {
+                    resultDiv.className = 'result irrigation-needed';
+                    resultDiv.innerHTML = `
+                        <h3>Irrigation Required</h3>
+                        <p>Based on current conditions, irrigation is recommended.</p>
+                        <p>Recommended water amount: ${result.waterAmount} mm</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result no-irrigation';
+                    resultDiv.innerHTML = `
+                        <h3>No Irrigation Needed</h3>
+                        <p>Current soil moisture levels are sufficient for the crop.</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request.');
+            }
+        });
+    </script>
+</body>
+</html> 
